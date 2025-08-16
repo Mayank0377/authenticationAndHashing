@@ -1,15 +1,21 @@
 import express from 'express';
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcrypt';
+import cookieParser from 'cookie-parser';
 const app = express();
 
 
+app.use(cookieParser());
+
 app.get('/', (req, res) => {
-    res.send('JWT Authentication project !');
+    // res.send('JWT Authentication project !');
 
 
     // jwt token generation and bcrypt hashing example
     let token = jwt.sign({email : "testmail@gmail.com"},"this_is_secret_key")
+
+    res.cookie("jwtToken",token) //sending the token as a cookie
+    res.send("JWT Token generated and sent as a cookie");
     console.log(token);
 
     bcrypt.hash("testpassword", 10, (err, hash) => {
@@ -27,6 +33,17 @@ app.get('/', (req, res) => {
     });
 
 });
+
+// reading the jwt token from cookies
+
+app.get("/read",function(req,res){
+    console.log(req.cookies); // reading the jwt token from cookies
+
+    // verify the jwt token
+    let data = jwt.verify(req.cookies.jwtToken, "this_is_secret_key")
+
+    console.log(data) // contains the payload(main data : email) of the token
+})
 
 app.listen(3000, () => {
     console.log('Server is running on port 3000');
